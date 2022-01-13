@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pj.project.comment.CommentMapper">
+
+	<!-- 增 [G] -->
+	<insert id="add">
+		insert into 
+		comment (id, uid, to_uid, detail, rate) 
+		values (#{id}, #{uid}, #{toUid}, #{detail}, #{rate}) 
+	</insert>
+
+	<!-- 删 -->
+	<delete id="delete">
+		delete from comment 
+		where id = #{id}
+	</delete>
+
+	<!-- 改 [G] -->
+	<update id="update">
+		update comment set
+		id = #{id}, 
+		uid = #{uid}, 
+		to_uid = #{toUid}, 
+		detail = #{detail}, 
+		rate = #{rate}
+		where id = #{id}
+	</update>
+
+
+	<!-- ================================== 查询相关 ================================== -->
+	<!-- select id, uid, to_uid, detail, rate from comment  -->
+	
+	<!-- 通用映射：手动模式 -->
+	<resultMap id="model" type="com.pj.project.comment.Comment">
+		<result property="id" column="id" />
+		<result property="uid" column="uid" />
+		<result property="toUid" column="to_uid" />
+		<result property="detail" column="detail" />
+		<result property="rate" column="rate" />
+		<result property="username" column="username" />
+		<result property="toUsername" column="toUsername" />
+	</resultMap>
+	
+	<!-- 公共查询sql片段 -->
+	<sql id="select_sql">
+		select *, 
+		(select username from user where id = comment.uid) as username, 
+		(select username from user where id = comment.to_uid) as toUsername
+		from comment 
+	</sql>
+	
+	<!-- 查 - 根据id -->
+	<select id="getById" resultMap="model">
+		<include refid="select_sql"></include>
+		where id = #{id}
+	</select>
+	
+	<!-- 查集合 - 根据条件（参数为空时代表忽略指定条件） [G] -->
+	<select id="getList" resultMap="model">
+		<include refid="select_sql"></include>
+		<where>
+			<if test=' this.has("id") '> and id = #{id} </if>
+			<if test=' this.has("uid") '> and uid = #{uid} </if>
+			<if test=' this.has("toUid") '> and to_uid = #{toUid} </if>
+			<if test=' this.has("detail") '> and detail = #{detail} </if>
+			<if test=' this.has("rate") '> and rate = #{rate} </if>
+		</where>
+		order by
+		<choose>
+			<when test='sortType == 1'> id desc </when>
+			<when test='sortType == 2'> uid desc </when>
+			<when test='sortType == 3'> to_uid desc </when>
+			<when test='sortType == 4'> detail desc </when>
+			<when test='sortType == 5'> rate desc </when>
+			<otherwise> id desc </otherwise>
+		</choose>
+	</select>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+</mapper>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pj.project.goods.MyGoodsMapper">
+
+
+    <select id="getTypeCount" resultType="com.pj.project.goods.TypeCount">
+        SELECT category.`name`,COUNT(goods.id) as count
+        FROM category LEFT JOIN goods
+        ON goods.cid = category.id
+        GROUP BY category.`name`
+        ORDER BY category.id
+    </select>
+
+</mapper>

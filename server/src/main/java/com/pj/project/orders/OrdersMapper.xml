@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pj.project.orders.OrdersMapper">
+
+	<!-- 增 [G] -->
+	<insert id="add">
+		insert into 
+		orders (id, owner_id, buyer_id, good_id) 
+		values (#{id}, #{ownerId}, #{buyerId}, #{goodId}) 
+	</insert>
+
+	<!-- 删 -->
+	<delete id="delete">
+		delete from orders 
+		where id = #{id}
+	</delete>
+
+	<!-- 改 [G] -->
+	<update id="update">
+		update orders set
+		id = #{id}, 
+		owner_id = #{ownerId}, 
+		buyer_id = #{buyerId}, 
+		good_id = #{goodId}
+		where id = #{id}
+	</update>
+
+
+	<!-- ================================== 查询相关 ================================== -->
+	<!-- select id, owner_id, buyer_id, good_id from orders  -->
+	
+	<!-- 通用映射：手动模式 -->
+	<resultMap id="model" type="com.pj.project.orders.Orders">
+		<result property="id" column="id" />
+		<result property="ownerId" column="owner_id" />
+		<result property="buyerId" column="buyer_id" />
+		<result property="goodId" column="good_id" />
+		<result property="userUsername" column="user_username" />
+		<result property="userUsername2" column="user_username2" />
+		<result property="goodsGname" column="goods_gname" />
+		<result property="goodsPrice" column="goods_price" />
+	</resultMap>
+	
+	<!-- 公共查询sql片段 -->
+	<sql id="select_sql">
+		select *, 
+		(select username from user where id = orders.owner_id) as user_username, 
+		(select username from user where id = orders.buyer_id) as user_username2, 
+		(select gname from goods where id = orders.good_id) as goods_gname, 
+		(select price from goods where id = orders.good_id) as goods_price
+		from orders 
+	</sql>
+	
+	<!-- 查 - 根据id -->
+	<select id="getById" resultMap="model">
+		<include refid="select_sql"></include>
+		where id = #{id}
+	</select>
+	
+	<!-- 查集合 - 根据条件（参数为空时代表忽略指定条件） [G] -->
+	<select id="getList" resultMap="model">
+		<include refid="select_sql"></include>
+		<where>
+			<if test=' this.has("id") '> and id = #{id} </if>
+			<if test=' this.has("ownerId") '> and owner_id = #{ownerId} </if>
+			<if test=' this.has("buyerId") '> and buyer_id = #{buyerId} </if>
+			<if test=' this.has("goodId") '> and good_id = #{goodId} </if>
+		</where>
+		order by
+		<choose>
+			<when test='sortType == 1'> id desc </when>
+			<when test='sortType == 2'> owner_id desc </when>
+			<when test='sortType == 3'> buyer_id desc </when>
+			<when test='sortType == 4'> good_id desc </when>
+			<otherwise> id desc </otherwise>
+		</choose>
+	</select>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+</mapper>
