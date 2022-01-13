@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>SQL控制台</title>
+	</head>
+	<body>
+		<div style="padding: 1em;">
+			加载中...
+		</div>
+		<script src="../../static/sa.js"></script>
+		<script type="text/javascript">
+			setTimeout(function() {
+				// 跳转到sql监控页
+				console.log(sa.cfg.api_url + '/druid/sql.html');
+				location.href = sa.cfg.api_url + '/druid/sql.html';
+			}, 100)
+		</script>
+	</body>
+</html>

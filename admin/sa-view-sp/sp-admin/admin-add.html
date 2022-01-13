@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	    <title>添加管理员</title>
+	    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<!-- 所有的 css & js 资源 -->
+		<link rel="stylesheet" href="https://unpkg.com/element-ui@2.13.0/lib/theme-chalk/index.css">
+		<link rel="stylesheet" href="../../static/sa.css"> 
+		<script src="https://unpkg.com/vue@2.6.10/dist/vue.min.js"></script>
+		<script src="https://unpkg.com/element-ui@2.13.0/lib/index.js"></script>
+		<script src="https://unpkg.com/http-vue-loader@1.4.2/src/httpVueLoader.js"></script>
+		<script src="https://unpkg.com/jquery@3.4.1/dist/jquery.min.js"></script>
+		<script src="https://www.layuicdn.com/layer-v3.1.1/layer.js"></script>
+		<script src="../../static/sa.js"></script>
+		<script src="../../static/kj/upload-util.js"></script>
+	</head>
+	<body>
+		<div class="vue-box" style="display: none;" :style="'display: block;'">
+			<!-- 参数栏 -->
+			<div class="c-panel">
+				<h4 class="c-title">添加一个管理员</h4>
+				<el-form>
+					<!-- 防止密码框被填充 -->
+					<div style="height: 0px; overflow: hidden;">
+						<el-input></el-input>
+						<el-input type="password"></el-input>
+					</div>
+					<!-- 表单 -->
+					<sa-item type="img" name="头像" v-model="m.avatar" br></sa-item>
+					<sa-item type="text" name="名称" v-model="m.name" br></sa-item>
+					<sa-item type="password" name="密码" v-model="m.password" br></sa-item>
+					<sa-item name="角色" br>
+						<el-select v-model="m.roleId">
+							<el-option label="请选择" :value="0" disabled></el-option>
+							<el-option v-for="role in roleList" :key="role.id" :label="role.name" :value="role.id"></el-option>
+						</el-select>
+					</sa-item>
+					<sa-item name="" br>
+						<el-button type="primary" icon="el-icon-plus" @click="ok()">保存</el-button>
+					</sa-item>
+				</el-form>
+			</div>
+		</div>
+		
+		<script type="text/javascript">
+			function crateModel() {
+				return {
+					id: 0,
+					name: '',
+					avatar: '',
+					password: '',
+					roleId: 0
+				}
+			}
+		</script>
+        <script>
+			
+			var app = new Vue({
+				components: {
+					"sa-item": httpVueLoader('../../sa-frame/com/sa-item.vue')
+				},
+				el: '.vue-box',
+				data: {
+					sa: sa, 	// 超级对象
+					m: crateModel(),
+					roleList: []
+				},
+				methods: {
+					// 修改
+					ok: function(){
+						// 表单校验 
+						let m = this.m;
+						sa.checkNull(m.avatar, '请选择一个头像');
+						sa.checkNull(m.name, '请输入昵称');
+						sa.checkNull(m.password, '请输入密码');
+						sa.checkNull(m.roleId, '请选择角色');
+						
+						// 添加
+						sa.ajax('/admin/add', m, function(res){
+							sa.alert('添加成功, 账号id为：' + res.data, function(){
+								this.m = crateModel();
+								// location.reload();
+							}.bind(this));
+						}.bind(this));
+					}
+				},
+				mounted: function(){
+					// 加载角色 
+					sa.ajax('/role/getList', function(res){
+						this.roleList = res.data;	// 数据  
+					}.bind(this), {msg: null});
+				}
+			})
+			
+		</script>
+	</body>
+</html>

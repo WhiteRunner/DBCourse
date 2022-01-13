@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Goods-列表</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<!-- 所有的 css & js 资源 -->
+		<link rel="stylesheet" href="https://unpkg.com/element-ui@2.13.0/lib/theme-chalk/index.css">
+		<link rel="stylesheet" href="../../static/sa.css">
+		<script src="https://unpkg.com/vue@2.6.10/dist/vue.js"></script>
+		<script src="https://unpkg.com/element-ui@2.13.0/lib/index.js"></script>
+		<script src="https://unpkg.com/http-vue-loader@1.4.2/src/httpVueLoader.js"></script>
+		<script src="https://unpkg.com/jquery@3.4.1/dist/jquery.js"></script>
+		<script src="https://www.layuicdn.com/layer-v3.1.1/layer.js"></script>
+		<script src="../../static/sa.js"></script>
+	</head>
+	<body>
+		<div class="vue-box" style="display: none;" :style="'display: block;'">
+			<div class="c-panel">
+				<!-- ------------- 检索参数 ------------- -->
+				<div class="c-title">Retrieval Arguments</div>
+				<el-form ref="form" :model='p' @submit.native.prevent>
+					<sa-item type="text" name="id" v-model="p.id"></sa-item>
+					<sa-item type="num" name="userId" v-model="p.uid"></sa-item>
+					<sa-item type="text" name="goodName" v-model="p.gname"></sa-item>
+					<sa-item type="num" name="price" v-model="p.price"></sa-item>
+					<sa-item type="enum" name="status" v-model="p.status" 
+						:jv="{0: 'unsold', 1: 'sold'}" jtype="2" def="all"></sa-item>
+					<sa-item type="text" name="remark" v-model="p.remark"></sa-item>
+					<sa-item type="text" name="catagoryId" v-model="p.cid"></sa-item>
+					<el-button type="primary" icon="el-icon-search" @click="p.pageNo = 1; f5()">Search</el-button>
+					<br />
+					<sa-item name="Sort">
+						<el-radio-group v-model="p.sortType" class="s-radio-text">
+							<el-radio :label="0">Default</el-radio>
+							<el-radio :label="1">id</el-radio>
+							<el-radio :label="2">userId</el-radio>
+							<el-radio :label="3">goodName</el-radio>
+							<el-radio :label="4">price</el-radio>
+							<el-radio :label="5">status</el-radio>
+							<el-radio :label="6">remark</el-radio>
+							<el-radio :label="7">catagoryId</el-radio>
+						</el-radio-group>
+					</sa-item>
+				</el-form>
+				<!-- ------------- 快捷按钮 ------------- -->
+				<sa-item type="fast-btn" show="add,get,delete,export,reset"></sa-item>
+				<!-- ------------- 数据列表 ------------- -->
+				<el-table class="data-table" ref="data-table" :data="dataList" >
+					<sa-td type="selection"></sa-td>
+					<sa-td name="id" prop="id" ></sa-td>
+					<sa-td name="userId" prop="uid" type="num"></sa-td>
+					<sa-td name="username" prop="username" ></sa-td>
+					<sa-td name="goodName" prop="gname" ></sa-td>
+					<sa-td name="price" prop="price" type="num"></sa-td>
+					<sa-td name="pic" prop="pic" type="img"></sa-td>
+					<sa-td name="status" prop="status" type="enum" :jv="{0: 'unsold', 1: 'sold'}"></sa-td>
+					<sa-td name="remark" prop="remark" ></sa-td>
+					<sa-td name="catagoryId" prop="cid" ></sa-td>
+					<sa-td name="category" prop="categoryName" ></sa-td>
+					<el-table-column label="Operation" fixed="right"  width="240px">
+						<template slot-scope="s">
+							<el-button class="c-btn" type="success" icon="el-icon-view" @click="get(s.row)">Check</el-button>
+							<el-button class="c-btn" type="primary" icon="el-icon-edit" @click="update(s.row)">Modify</el-button>
+							<el-button class="c-btn" type="danger" icon="el-icon-delete" @click="del(s.row)">Delete</el-button>
+						</template>
+					</el-table-column>
+				</el-table>
+				<!-- ------------- 分页 ------------- -->
+				<sa-item type="page" :curr.sync="p.pageNo" :size.sync="p.pageSize" :total="dataCount" @change="f5()"></sa-item>
+			</div>
+		</div>
+		<script>
+			var app = new Vue({
+				components: {
+					"sa-item": httpVueLoader('../../sa-frame/com/sa-item.vue'),  
+					"sa-td": httpVueLoader('../../sa-frame/com/sa-td.vue'),		
+				},
+				el: '.vue-box',
+				data: {
+					p: { // 查询参数  
+						id: '',		// id 
+						uid: '',		// userId 
+						gname: '',		// goodName 
+						price: '',		// price 
+						status: '',		// status (0=unsold, 1=sold) 
+						remark: '',		// remark 
+						cid: '',		// catagoryId 
+						pageNo: 1,		// 当前页 
+						pageSize: 10,	// 页大小 
+						sortType: 0		// 排序方式 
+					},
+					dataCount: 0,
+					dataList: [], // 数据集合 
+				},
+				methods: {
+					// 刷新
+					f5: function() {
+						sa.ajax('/Goods/getList', sa.removeNull(this.p), function(res) {
+							this.dataList = res.data; // 数据
+							this.dataCount = res.dataCount; // 数据总数 
+							sa.f5TableHeight();		// 刷新表格高度 
+						}.bind(this));
+					},
+					// 查看
+					get: function(data) {
+						sa.showIframe('Data Detail', 'goods-info.html?id=' + data.id, '1050px', '90%');
+					},
+					// 查看 - 根据选中的
+					getBySelect: function(data) {
+						var selection = this.$refs['data-table'].selection;
+						if(selection.length == 0) {
+							return sa.msg('Please select one record')
+						}
+						this.get(selection[0]);
+					},
+					// 修改
+					update: function(data) {
+						sa.showIframe('Modify Record', 'goods-add.html?id=' + data.id, '1000px', '90%');
+					},
+					// 新增
+					add: function(data) {
+						sa.showIframe('Add Record', 'goods-add.html?id=-1', '1000px', '90%');
+					},
+					// 删除
+					del: function(data) {
+						sa.confirm('Are you sure to delete', function() {
+							sa.ajax('/Goods/delete?id=' + data.id, function(res) {
+								sa.arrayDelete(this.dataList, data);
+								sa.ok('Delete Success');
+								sa.f5TableHeight();		// 刷新表格高度 
+							}.bind(this))
+						}.bind(this));
+					},
+					// 批量删除
+					deleteByIds: function() {
+						// 获取选中元素的id列表 
+						let selection = this.$refs['data-table'].selection;
+						let ids = sa.getArrayField(selection, 'id');
+						if(selection.length == 0) {
+							return sa.msg('Please select at least one record')
+						}
+						// 提交删除 
+						sa.confirm('Are you sure to delete', function() {
+							sa.ajax('/Goods/deleteByIds', {ids: ids.join(',')}, function(res) {
+								sa.arrayDelete(this.dataList, selection);
+								sa.ok('Delete Success');
+								sa.f5TableHeight();		// 刷新表格高度 
+							}.bind(this))
+						}.bind(this));
+					},
+				},
+				created: function() {
+					this.f5();
+					sa.onInputEnter();
+				}
+			})
+		</script>
+	</body>
+</html>
