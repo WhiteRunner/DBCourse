@@ -30,7 +30,7 @@
 				var myChart = echarts.init(this.$refs['pic-chart']);
 				option = {
 					title: {
-						text: 'Quantitative distribution',
+						text: 'Amount distribution',
 						left: 'left',
 						top: 0,
 						textStyle: {
@@ -52,7 +52,7 @@
 						formatter: "{a} <br/>{b} : {c} ({d}%)"
 					},
 					series: [{
-						name: 'Quantitative distribution',
+						name: 'Amount distribution',
 						type: 'pie',
 						radius: '70%', // 半径大小
 						center: ['50%', '60%'],
