@@ -1,0 +1,235 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.pj</groupId>
+	<artifactId>sp-server</artifactId>
+	<version>0.0.1</version>
+
+	<!-- SpringBoot -->
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.3.3.RELEASE</version>
+	</parent>
+
+	<!-- 指定一些属性 -->
+	<properties> 
+		<java.version>1.8</java.version>
+		<maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
+		<!-- 主类地址，一定要配置，否则打包时运行会出错 -->
+		<java.run.main.class>com.pj.SpServerApplication</java.run.main.class>
+		<!--docker镜像名(注意不能大写)-->
+		<docker.image.name>xyy/dbcourse</docker.image.name>
+	</properties>
+	
+	<dependencies>
+
+		<!-- springboot依赖 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+
+       	<!-- springboot集成 mybatis-plus -->
+		<dependency>
+		    <groupId>com.baomidou</groupId>
+		    <artifactId>mybatis-plus-boot-starter</artifactId>
+		    <version>3.3.2</version>
+		</dependency>
+		
+        <!-- pagehelper分页插件 -->
+        <dependency>
+            <groupId>com.github.pagehelper</groupId>
+            <artifactId>pagehelper-spring-boot-starter</artifactId>
+            <version>1.2.13</version>
+        </dependency>
+        
+		<!-- mysql -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+		</dependency>
+		
+		<!-- 阿里 druid 连接池  -->
+		<dependency>
+	        <groupId>com.alibaba</groupId>
+	        <artifactId>druid-spring-boot-starter</artifactId>
+	        <version>1.1.10</version>
+	    </dependency>
+
+		<!-- 神器lombok插件 -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- Sa-Token 权限认证, 在线文档：http://sa-token.dev33.cn/ -->
+		<dependency>
+		    <groupId>cn.dev33</groupId>
+		    <artifactId>sa-token-spring-boot-starter</artifactId>
+		    <version>1.28.0</version>
+		</dependency>
+		
+	    <!-- Sa-Token 整合 Redis (使用jackson序列化方式) -->
+	    <dependency>
+	        <groupId>cn.dev33</groupId>
+	        <artifactId>sa-token-dao-redis-jackson</artifactId>
+		    <version>1.28.0</version>
+	    </dependency>
+
+        <!-- 工具类大全 - 在线文档：https://hutool.cn/docs/#/ -->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.7.15</version>
+        </dependency>
+                
+        <!-- OkHttps网络请求库： http://okhttps.ejlchina.com/ -->
+        <dependency>
+		     <groupId>com.ejlchina</groupId>
+		     <artifactId>okhttps</artifactId>
+		     <version>3.2.0</version>
+		</dependency>
+        
+        <!-- redis java客户端jar包 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.lettuce</groupId>
+                    <artifactId>lettuce-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+        </dependency>
+        
+        <!--Alijson插件-->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.73</version>
+        </dependency>
+
+		<!-- ConfigurationProperties -->
+        <dependency>
+        	<groupId>org.springframework.boot</groupId>
+        	<artifactId>spring-boot-configuration-processor</artifactId>
+        	<optional>true</optional>
+        </dependency>
+        
+	</dependencies>
+
+
+	<!-- 构建配置 -->
+    <build>
+        <!-- 配置资源目录  -->
+    	<resources>
+			<resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.xml</include>
+                </includes>
+			</resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.*</include>
+                </includes>
+            </resource>
+		</resources>
+        <plugins>
+            <!-- 打包插件(完整包) -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>1.2.2</version>
+				<configuration>
+					<!--远程Docker的地址-->
+					<dockerHost>https://110.40.199.128:2375</dockerHost>
+					<!--证书地址-->
+					<dockerCertPath>D:\programming\java\docker</dockerCertPath>
+					<!--镜像名称-->
+					<imageName>${docker.image.name}</imageName>
+					<!--指定标签-->
+					<imageTags>
+						<imageTag>${project.version}</imageTag>
+					</imageTags>
+					<!--Dockerfile的位置-->
+					<dockerDirectory>src/main/docker</dockerDirectory>
+					<!--基础镜像jdk1.8-->
+					<!--<baseImage>java</baseImage>-->
+					<!--作者信息-->
+					<!--<maintainer>xyy fx090207@163.com</maintainer>-->
+					<!--工作目录-->
+					<!--<workdir>/ROOT</workdir>-->
+					<!--执行命令-->
+					<!--<cmd>["java","-version"]</cmd>-->
+					<!--<entryPoint>["java","-jar","${project.build.finalName}.jar"]</entryPoint>-->
+					<!--复制jar包到指定目录-->
+					<resources>
+						<resource>
+							<targetPath>/</targetPath>
+							<!--target目录-->
+							<directory>${project.build.directory}</directory>
+							<!--jar文件-->
+							<include>${project.build.finalName}.jar</include>
+						</resource>
+					</resources>
+				</configuration>
+			</plugin>
+            <!-- 打包jar文件时，配置manifest文件，加入lib包的jar依赖 -->
+            <!--<plugin>-->
+            <!--    <groupId>org.apache.maven.plugins</groupId>-->
+            <!--    <artifactId>maven-jar-plugin</artifactId>-->
+            <!--    <configuration>-->
+            <!--        <archive>-->
+            <!--            <manifest>-->
+            <!--                <addClasspath>true</addClasspath>-->
+            <!--                <classpathPrefix>lib/</classpathPrefix>-->
+            <!--                <mainClass>${java.run.main.class}</mainClass>-->
+            <!--            </manifest>-->
+            <!--        </archive>-->
+            <!--    </configuration>-->
+            <!--</plugin>-->
+
+            <!-- 拷贝依赖的jar包到lib目录 -->
+            <!--<plugin>-->
+            <!--    <groupId>org.apache.maven.plugins</groupId>-->
+            <!--    <artifactId>maven-dependency-plugin</artifactId>-->
+            <!--    <executions>-->
+            <!--        <execution>-->
+            <!--            <id>copy</id>-->
+            <!--            <phase>package</phase>-->
+            <!--            <goals>-->
+            <!--                <goal>copy-dependencies</goal>-->
+            <!--            </goals>-->
+            <!--            <configuration>-->
+            <!--                <outputDirectory>-->
+            <!--                    ${project.build.directory}/lib-->
+            <!--                </outputDirectory>-->
+            <!--            </configuration>-->
+            <!--        </execution>-->
+            <!--    </executions>-->
+            <!--</plugin>-->
+        </plugins>
+    </build>
+
+
+</project>
